@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-box">
+            <h2> Welcome Back Sign in </h2>
+
+            <form action="/login" method="POST">
+                <input type="text" name="username" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+        </div>
+    </div>
+</body>
+</html>

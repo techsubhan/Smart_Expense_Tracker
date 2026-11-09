@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="profile-info">
+            <div class="avatar">👤</div>
+            <h3>{{ user.name }}</h3>
+            <p>Active User</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+        <a href="#" onclick="showAll()">📊 Dashboard</a>
+        <a href="#" onclick="showSection('add-expense-sec')">➕ Add Expense</a>
+        <a href="#" onclick="showSection('history-sec')">📁 History</a>
+        <a href="#" onclick="showSection('report-sec')">📈 Reports</a>
+        <a href="/logout" class="logout-link">🚪 Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+            <h1 id="page-title">Dashboard Overview</h1>
+        </div>
+
+        {% if total_spent > user.budget_limit %}
+        <div class="budget-alert">
+            <span>⚠️</span>
+            <strong>Budget Warning:</strong> You've spent Rs {{ total_spent }}, which is over your limit of Rs {{ user.budget_limit }}!
+        </div>
+        {% endif %}
+
+        <div id="overview" class="content-section">
+            <div class="cards">
+                <div class="card income"><h3>Total Income</h3><p>Rs {{ total_income }}</p></div>
+                <div class="card expense"><h3>Total Expense</h3><p>Rs {{ total_spent }}</p></div>
+                <div class="card balance"><h3>Balance</h3><p>Rs {{ total_income - total_spent }}</p></div>
+            </div>
+        </div>
+
+        <div id="add-expense-sec" class="content-section">
+            
+            <div class="form-box" style="margin-bottom: 20px;">
+                <h2>Add New Expense</h2>
+                <form action="/add" method="POST"> 
+                    <div class="grid">
+                        <input type="text" name="title" placeholder="Title" required> 
+                        <input type="number" name="amount" placeholder="Amount" required> 
+                        <select name="category"> 
+                            <option>Food</option>
+                            <option>Travel</option>
+                            <option>Bills</option>
+                            <option>Shopping</option>
+                            <option>Other</option>
+                        </select>
+                        <input type="date" name="date" required> 
+                    </div>
+                    <button type="submit" class="main-btn">Add Expense</button>
+                </form>
+            </div>
+
+            <div class="form-box" style="margin-bottom: 20px;">
+                <h2>Update Monthly Income</h2>
+                <form action="/update_income" method="POST">
+                    <div class="flex-row">
+                        <input type="number" name="income" placeholder="Enter New Total Income" required>
+                        <button type="submit" class="btn-small">Update Income</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="form-box">
+                <h2>Update Budget Limit</h2>
+                <form action="/update_budget" method="POST">
+                    <div class="flex-row">
+                        <input type="number" name="budget_limit" placeholder="Enter New Budget Limit" required>
+                        <button type="submit" class="btn-small">Set Limit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="history-sec" class="content-section">
+            <div class="table-box">
+                <div class="table-header">
+                    <h2>Expense History</h2>
+                    <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="🔍 Search expenses...">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Title</th><th>Amount</th><th>Category</th><th>Date</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTable">
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ item.title }}</td>
+                            <td>Rs {{ item.amount }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.date }}</td>
+                            <td>
+                                <a href="/delete/{{ loop.index0 }}" class="delete">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="report-sec" class="content-section hidden">
+            <div class="table-box">
+                <h2>Detailed Monthly Report</h2>
+                <table class="report-table">
+                    <thead>
+                        <tr><th>Date</th><th>Expense Name</th><th>Price (Rs)</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr><td>{{ item.date }}</td><td>{{ item.title }}</td><td>Rs {{ item.amount }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="report-footer">
+                        <tr>
+                            <td colspan="2" style="padding-top: 20px; font-weight: bold;">Grand Total:</td>
+                            <td class="total-highlight" style="padding-top: 20px; color: #38bdf8; font-weight: bold;">Rs {{ total_spent }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Search Functionality
+    function searchTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.getElementById("expenseTable").getElementsByTagName("tr");
+        for (let row of rows) {
+            let title = row.getElementsByTagName("td")[1].textContent.toLowerCase();
+            let category = row.getElementsByTagName("td")[3].textContent.toLowerCase();
+            row.style.display = (title.includes(input) || category.includes(input)) ? "" : "none";
+        }
+    }
+
+    // Dashboard View
+    function showAll() {
+        document.getElementById('overview').style.display = "block";
+        document.getElementById('add-expense-sec').style.display = "block";
+        document.getElementById('history-sec').style.display = "block";
+        document.getElementById('report-sec').style.display = "none";
+        document.getElementById('page-title').innerText = "Dashboard Overview";
+    }
+
+    // Individual Section View
+    function showSection(sectionId) {
+        const sections = ['overview', 'add-expense-sec', 'history-sec', 'report-sec'];
+        sections.forEach(id => {
+            document.getElementById(id).style.display = "none";
+        });
+        document.getElementById(sectionId).style.display = "block";
+        const titles = {
+            'add-expense-sec': 'Manage Funds & Expenses',
+            'history-sec': 'Expense History',
+            'report-sec': 'Monthly Report Summary'
+        };
+        document.getElementById('page-title').innerText = titles[sectionId];
+    }
+
+    window.onload = showAll;
+</script>
+</body>
+</html>

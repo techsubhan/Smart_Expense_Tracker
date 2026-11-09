@@ -1,0 +1,24 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+frontend/venv/
+.venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+
+# Logs
+*.log
